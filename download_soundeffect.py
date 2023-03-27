@@ -46,21 +46,16 @@ def listToString(str_list):
         result += s + " "
     return result.strip()
 
-#url = 'https://jinstale.tistory.com/category/효과음%20모음'
-#url = 'https://jinstale.tistory.com/category/효과음%20모음/특수효과음1070개'
 url = "https://soundeffect-lab.info/sound/anime/"
 save_directory = 'mp3'
 
 page_response = requests.get(url, verify=False)
-#print(page_response.content)
 soup = BeautifulSoup(page_response.content, 'html.parser')
 
 
 page = []
 
-a_tag = soup.select('a[href^="mp3/"]') #ul_tag = soup.find_all('a', {'class':'link-article'})
-#li_tag = ul_tag.find_all('li')
-#print(ul_tag)
+a_tag = soup.select('a[href^="mp3/"]') 
 for item in a_tag:
     print("============")
     filename = item.get('href')
