@@ -9,10 +9,8 @@ import os
 import re
 import time
 import json
-
 import ssl
-
-import os
+import csv
 
 from urllib.parse import urlparse
 
@@ -75,7 +73,7 @@ for page in pages:
     if not os.path.exists(parent_directory):
         os.mkdir(parent_directory)
 
-    #print(page)
+    # print(page)
 
     for item in page:
         # URL을 '/'로 분할
@@ -94,49 +92,59 @@ for page in pages:
         if not os.path.exists(child_path):
             os.mkdir(child_path)
 
-        
         driver.get(url)
 
         # 스크롤을 끝까지 내리기
-        last_height = driver.execute_script("return document.body.scrollHeight")
+        last_height = driver.execute_script(
+            "return document.body.scrollHeight")
         while True:
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            driver.execute_script(
+                "window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(0.1)  # 로딩 대기
-            new_height = driver.execute_script("return document.body.scrollHeight")
+            new_height = driver.execute_script(
+                "return document.body.scrollHeight")
 
             if new_height == last_height:
                 break
 
             last_height = new_height
 
-
         # 웹 페이지의 HTML 소스 얻기
         html = driver.page_source
-    
+
         # Beautiful Soup 객체 생성
         soup = BeautifulSoup(html, 'html.parser')
 
         # 웹 페이지에서 <div class="u" 부분 추출
         div_u_elements = soup.find_all('div', class_='u')
 
-
         file_list = []
         for div in div_u_elements:
             html = div.prettify()
             soup = BeautifulSoup(html, "html.parser")
-  
+
             data_labels = soup.find('div', {'class': 'u'})['data-labels']
             data_ytid = soup.find('div', {'class': 'u'})['data-ytid']
 
-            
+            clean_str = data_labels.replace('[', '').replace(
+                ']', '').replace('"', '').replace(',', '')
+            print(clean_str)
             file_list.append((data_labels, yt_url+data_ytid, data_ytid+'.mp3'))
 
-        print(file_list)
+        # _fielname = child_path+'.csv'
+
+        # with open(_fielname, 'w', newline='', encoding='utf-8') as csvfile:
+        #     csv_writer = csv.writer(csvfile)
+        #     for row in file_list:
+        #         print(row)
+            # csv_writer.writerow(row)
+
+        # print(file_list)
 
         # for _file in file_list:
         #     file_name = _file[2]
         #     if not os.path.exists(child_path+'/'+file_name):
-        #         try: 
+        #         try:
         #             video = YouTube(_file[1])
         #             audio_stream = video.streams.filter(only_audio=True).first()
 
