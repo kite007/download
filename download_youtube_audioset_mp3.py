@@ -97,6 +97,19 @@ for page in pages:
         
         driver.get(url)
 
+        # 스크롤을 끝까지 내리기
+        last_height = driver.execute_script("return document.body.scrollHeight")
+        while True:
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(0.1)  # 로딩 대기
+            new_height = driver.execute_script("return document.body.scrollHeight")
+
+            if new_height == last_height:
+                break
+
+            last_height = new_height
+
+
         # 웹 페이지의 HTML 소스 얻기
         html = driver.page_source
     
@@ -118,18 +131,18 @@ for page in pages:
             
             file_list.append((data_labels, yt_url+data_ytid, data_ytid+'.mp3'))
 
-        #print(file_list)
+        print(file_list)
 
-        for _file in file_list:
-            file_name = _file[2]
-            if not os.path.exists(child_path+'/'+file_name):
-                try: 
-                    video = YouTube(_file[1])
-                    audio_stream = video.streams.filter(only_audio=True).first()
+        # for _file in file_list:
+        #     file_name = _file[2]
+        #     if not os.path.exists(child_path+'/'+file_name):
+        #         try: 
+        #             video = YouTube(_file[1])
+        #             audio_stream = video.streams.filter(only_audio=True).first()
 
-                    audio_stream.download(output_path=child_path, filename=file_name)
-                except VideoUnavailable:
-                    print("VideoUnavailable!!! ", child_path, file_name)
-                    continue
-            else:
-                print("이미 다운로드 받았음!! ", child_path, file_name)
+        #             audio_stream.download(output_path=child_path, filename=file_name)
+        #         except VideoUnavailable:
+        #             print("VideoUnavailable!!! ", child_path, file_name)
+        #             continue
+        #     else:
+        #         print("이미 다운로드 받았음!! ", child_path, file_name)
