@@ -45,18 +45,17 @@ save_directory = 'audioset'
 
 
 page_response = requests.get(url)
-# print(page_response.content)
 soup = BeautifulSoup(page_response.content, 'html.parser')
 ul_tag = soup.find_all('a', {'class': 'db'})
 
 pages = []
 for item in ul_tag:
-    # print(item)
+
     result = extract_text_between_quotes(str(item))
     url_list0 = url_eval + result[1]
     url_list1 = url_balanced + result[1]
     url_list2 = url_unbalanced + result[1]
-    # print(url_list0, url_list1, url_list2)
+
     pages.append((url_list0, url_list1, url_list2))
 
 
@@ -65,7 +64,7 @@ for page in pages:
     parsed_url = urlparse(page[0])
     file_path = parsed_url.path
 
-# 파일명에서 확장자를 제거
+    # 파일명에서 확장자를 제거
     parent_directory = os.path.splitext(os.path.basename(file_path))[0]
 
     print(parent_directory)
@@ -118,39 +117,50 @@ for page in pages:
         # 웹 페이지에서 <div class="u" 부분 추출
         div_u_elements = soup.find_all('div', class_='u')
 
+        # 정규표현식을 사용하여 두 번째 요소를 추출하기 위한 패턴
+        pattern = re.compile(r'\"\w+\",(\"[\w\s,]+\")')
+
         file_list = []
         for div in div_u_elements:
             html = div.prettify()
             soup = BeautifulSoup(html, "html.parser")
 
             data_labels = soup.find('div', {'class': 'u'})['data-labels']
+            second_elements = pattern.findall(data_labels)
+            # 따옴표를 제거한 결과를 저장할 리스트
+            
+            # 따옴표를 제거한 결과를 저장할 리스트
+            result = []
+
+            # 각 요소에서 따옴표 제거
+            for element in second_elements:
+                result.append(element.strip("\""))
+
             data_ytid = soup.find('div', {'class': 'u'})['data-ytid']
 
-            clean_str = data_labels.replace('[', '').replace(
-                ']', '').replace('"', '').replace(',', '')
-            print(clean_str)
-            file_list.append((data_labels, yt_url+data_ytid, data_ytid+'.mp3'))
-
-        # _fielname = child_path+'.csv'
-
-        # with open(_fielname, 'w', newline='', encoding='utf-8') as csvfile:
-        #     csv_writer = csv.writer(csvfile)
-        #     for row in file_list:
-        #         print(row)
-            # csv_writer.writerow(row)
+            #clean_str = data_labels.replace('[', '').replace(']', '').replace('"', '').replace(',', '')
+            
+            file_list.append((result, yt_url+data_ytid, data_ytid+'.mp3'))
+        
+        _fielname = child_path+'.csv'
+        
+        with open(_fielname, 'w', newline='', encoding='utf-8') as csvfile:
+            csv_writer = csv.writer(csvfile)
+            for row in file_list:
+                csv_writer.writerow(row)
 
         # print(file_list)
 
-        # for _file in file_list:
-        #     file_name = _file[2]
-        #     if not os.path.exists(child_path+'/'+file_name):
-        #         try:
-        #             video = YouTube(_file[1])
-        #             audio_stream = video.streams.filter(only_audio=True).first()
+        for _file in file_list:
+            file_name = _file[2]
+            if not os.path.exists(child_path+'/'+file_name):
+                try:
+                    video = YouTube(_file[1])
+                    audio_stream = video.streams.filter(only_audio=True).first()
 
-        #             audio_stream.download(output_path=child_path, filename=file_name)
-        #         except VideoUnavailable:
-        #             print("VideoUnavailable!!! ", child_path, file_name)
-        #             continue
-        #     else:
-        #         print("이미 다운로드 받았음!! ", child_path, file_name)
+                    audio_stream.download(output_path=child_path, filename=file_name)
+                except VideoUnavailable:
+                    print("VideoUnavailable!!! ", child_path, file_name)
+                    continue
+            else:
+                print("이미 다운로드 받았음!! ", child_path, file_name)
