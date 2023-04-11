@@ -153,6 +153,7 @@ for page in pages:
 
         for _file in file_list:
             file_name = _file[2]
+            print(_file[1]+" ...........  " + _file[2])
             if not os.path.exists(child_path+'/'+file_name):
                 try:
                     video = YouTube(_file[1])
@@ -162,5 +163,7 @@ for page in pages:
                 except VideoUnavailable:
                     print("VideoUnavailable!!! ", child_path, file_name)
                     continue
+                except Exception as e:
+                    print("Exception : ", {e})
             else:
                 print("이미 다운로드 받았음!! ", child_path, file_name)
